@@ -44,7 +44,7 @@ class CreateItemsTable extends Migration
             $table->integer('h');
             $table->integer('x');
             $table->integer('y');
-            $table->boolean('mods')->nullable();
+            $table->boolean('mods')->default(false);
             $table->softDeletes();
             $table->timestamps();
 

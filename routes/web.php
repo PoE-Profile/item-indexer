@@ -11,8 +11,10 @@
 |
 */
 
-// Route::get('/', function () {
-//     return view('index');
+// \DB::listen(function($sql) {
+//     var_dump($sql->sql);
 // });
 
-Route::get('/', ['as' => 'queries.search', 'uses' => 'SearchController@main']);
+
+Route::get('/', ['as' => 'queries.index', 'uses' => 'SearchController@index']);
+Route::post('/', ['as' => 'queries.search', 'uses' => 'SearchController@search']);

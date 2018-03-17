@@ -19,6 +19,8 @@ class CreateStashesTable extends Migration
             $table->string('lastCharacterName')->nullable();
             $table->string('poeStashId')->unique();
             $table->text('current_items')->nullable();
+            $table->string('league')->default("Standard");
+
             $table->timestamps();
         });
         Schema::table('stashes', function($table) {

@@ -23,6 +23,8 @@ class CreateItemModsTable extends Migration
 
         Schema::table('item_mods', function($table) {
             $table->index('item_id');
+            $table->index('value');
+            $table->index('mod_id');
             $table->index('deleted_at');
         });
     }

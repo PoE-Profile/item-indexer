@@ -13,7 +13,7 @@ class ProcessMods extends Command
      * The name and signature of the console command.
      * @var string
      */
-    protected $signature = 'process:mods {--import}';
+    protected $signature = 'poe:process-mods {--import=}';
 
     /**
      * The console command description.
@@ -38,31 +38,11 @@ class ProcessMods extends Command
      */
     public function handle()
     {
-        // $allMods=DB::table('mods')->get();
-        // $allMods=array_map(function($mod){ return  array($mod->name=>$mod->id); }, $allMods);
-        // $allMods=array_collapse($allMods);
-        // var_dump($allMods["-# Physical Damage taken from Projectile Attacks"]);
-        // die;
-        $allMods=DB::table('mods')->get();
+        $this->selectImportOption();
+
+        $allMods=DB::table('mods')->get()->toArray();
         $allMods=array_map(function($mod){ return  array($mod->name=>$mod->id); }, $allMods);
         $this->dbMods=array_collapse($allMods);
-
-        if($this->option('import')){
-            $mods = DB::table('item_mods')
-             ->select('id','name')
-             ->groupBy('name')
-             ->get();
-            $newMods=array();
-            foreach ($mods as $mod) {
-              $name = preg_replace('/\d+/u', '#', $mod->name);
-              if (!array_key_exists($name, $this->dbMods)) {
-                $newMods[]= ['name' => $mod->name];
-              }
-            }
-            // dd(array_collapse($newMods));
-            DB::table('mods')->insert($newMods);
-            die;
-        }
 
         $this->comment("Start checking for items:");
         do {
@@ -90,15 +70,11 @@ class ProcessMods extends Command
 
         foreach ($items as $item) {
           if ($item->explicitMods != null) {
-              $itemMods [] = json_decode($item->explicitMods);
-              $itemMods [] = json_decode($item->implicitMods);
-              $itemMods [] = json_decode($item->craftedMods);
+              $itemMods [] = $item->explicitMods;
+              $itemMods [] = $item->implicitMods;
+              $itemMods [] = $item->craftedMods;
               $itemMods = array_collapse($itemMods);
 
-              $totalMods = $this->precessTotal($itemMods, $item->id);
-              foreach ($totalMods as $totalMod) {
-                  array_push($mods,$totalMod);
-              }
 
               foreach ($itemMods as $mod) {
                   $average = $mod;
@@ -141,30 +117,6 @@ class ProcessMods extends Command
 
     }
 
-    private function precessTotal($itemMods, $id){
-        $pseudoMods = new \App\Parse_mods\CalcucaltePseudoMods;
-        $pseudoMods->addMods($itemMods);
-        $result = $pseudoMods->getMods();
-        $result = array_filter($result, function($val){
-            return $val->total !== 0;
-        });
-
-        $mods = [];
-        foreach ($result as $key => $value) {
-            $db_mod_id = 0;
-            if (array_key_exists($key, $this->dbMods)) {
-                $db_mod_id=$this->dbMods[$key];
-            }
-            $mods[] = [
-                'name' => $key,
-                'value' => $value->total,
-                'item_id' => $id,
-                'mod_id' => $db_mod_id,
-            ];
-        }
-
-        return $mods;
-    }
 
     private function logTime($msg,$reset=false)
     {
@@ -186,6 +138,50 @@ class ProcessMods extends Command
       //$this->comment('Time '.$execution_time);
       if($reset)
         $this->time_start = microtime(true);
+    }
+
+    private function selectImportOption(){
+        $option=$this->option('import');
+
+        if($option=='file'){
+            $this->importFromFile();
+            die;
+        }
+
+        if($option=='db'){
+            $this->importFromDb();
+            die;
+        }
+    }
+
+    private function importFromFile(){
+
+        $bigData = json_decode(\Storage::disk('api')->get("poeData.json"));
+        $newMods=array();
+        foreach ($bigData->mods as $mod) {
+          $name = preg_replace('/\d+/u', '#', $mod->name);
+          if (!array_key_exists($name, $this->dbMods)) {
+            $newMods[]= ['name' => $mod->name];
+          }
+        }
+        DB::table('mods')->insert($newMods);
+
+    }
+
+    private function importFromDb(){
+        $mods = DB::table('item_mods')
+         ->select('id','name')
+         ->groupBy('name')
+         ->get();
+        $newMods=array();
+        foreach ($mods as $mod) {
+          $name = preg_replace('/\d+/u', '#', $mod->name);
+          if (!array_key_exists($name, $this->dbMods)) {
+            $newMods[]= ['name' => $mod->name];
+          }
+        }
+        // dd(array_collapse($newMods));
+        DB::table('mods')->insert($newMods);
     }
 
 }

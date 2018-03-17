@@ -17,7 +17,7 @@ class ProcessStashes extends Command
      *
      * @var string
      */
-    protected $signature = 'process:stashes  {--mods}';
+    protected $signature = 'poe:process-stashes {--changeid=}';
 
     /**
      * The console command description.
@@ -51,23 +51,34 @@ class ProcessStashes extends Command
      */
     public function handle()
     {
-        $this->comment("Start checking for new ids:");
-        do {
-          $next_page = ApiPages::where('processed', '0')->orderBy('created_at', 'ASC')->first();
-          //if page ids difrent start new job
-          if($next_page){
-            $this->logTime("",true);
-            if($this->debug){
-              $this->comment("start proces json for :".$next_page);
-            }else{
-              $this->comment("start proces json for id: ".$next_page->id);
-            }
-            $this->process_stash($next_page);
+      if($this->option('changeid')){
+        $id=$this->option('changeid');
+        $next_page = ApiPages::where('pageId', $id)->first();
+        //if page ids difrent start new job
+        if($next_page){
+          $this->comment("start proces json for :".$next_page);
+          $this->process_stash($next_page);
+        }
+        return;
+      }
+      
+      $this->comment("Start checking for new ids:");
+      do {
+        $next_page = ApiPages::where('processed', '0')->orderBy('created_at', 'ASC')->first();
+        //if page ids difrent start new job
+        if($next_page){
+          $this->logTime("",true);
+          if($this->debug){
+            $this->comment("start proces json for :".$next_page);
+          }else{
+            $this->comment("start proces json for id: ".$next_page->id);
           }
-          //$this->comment("no new ids..");
-          // sleep(1);
-          usleep(700000);
-        } while (true);
+          $this->process_stash($next_page);
+        }
+        //$this->comment("no new ids..");
+        // sleep(1);
+        usleep(700000);
+      } while (true);
     }
 
     private function process_stash($page)
@@ -84,6 +95,7 @@ class ProcessStashes extends Command
         }
 
         // proces json
+        unset($this->api);
         $json = Storage::disk('local')->get($id . '.txt');
         $this->api = json_decode($json);
 
@@ -278,7 +290,7 @@ class ProcessStashes extends Command
         if (array_key_exists("sockets", $item)) {
           $sockets=json_encode($item->sockets);
         }
-        
+
         $str=$note.'/'.$modsStr.'/'.$sockets;
         return md5($str);
     }

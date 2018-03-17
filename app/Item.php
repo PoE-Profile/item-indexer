@@ -14,74 +14,109 @@ class Item extends Model
 
   protected $dates = ['deleted_at'];
 
-  public function stash()
-  {
-      return $this->belongsTo('App\Stash','stash_id','id');
-  }
+  protected $casts = [
+          'implicitMods' => 'array',
+          'explicitMods' => 'array',
+          'craftedMods' => 'array',
+          'enchantMods' => 'array',
+          'properties' => 'array',
+          'requirements' => 'array'
+      ];
+    public function getSocketsAttribute($value)
+    {
+      return json_decode($value);
+    }
 
-  public function mods()
-  {
-      return $this->hasMany('App\Mod', 'item_id', 'id');
-  }
+    public function stash()
+    {
+        return $this->belongsTo('App\Stash','stash_id','id');
+    }
 
-  public function charname($charName)
-  {
+    public function mods()
+    {
+        return $this->hasMany('App\Mod', 'item_id', 'id');
+    }
+
+    public function charname($charName)
+    {
       // $scope->stash()->where('lastCharacterName', 'LIKE', '%' . $charName . '%');
-      // dd($scope->stash->take(2)->get());
       $this->stash()->where('lastCharacterName', 'LIKE', '%' . $charName . '%');
-  }
+    }
 
-  public function requirements()
-  {
-      $requirements = json_decode($this->requirements);
-      return $requirements;
-  }
 
-  public function implicitMods()
-  {
-      $requirements = json_decode($this->implicitMods);
-      return $requirements;
-  }
-
-  public function explicitMods()
-  {
-      $requirements = json_decode($this->explicitMods);
-      return $requirements;
-  }
-
-  public function scopeName($scope, $name)
-  {
-      $scope->where('name', 'LIKE', '%' . $name . '%');
-  }
+    public function scopeName($scope, $name)
+    {
+        $scope->where('name', 'LIKE', '%' . $name . '%');
+    }
 
   // public function scopeOrName($scope, $name)
   // {
   //     $scope->where('name', 'LIKE', '%' . $name . '%');
   // }
 
-  public function scopeType($scope, $type)
-  {
-      $scope->where('type', '=',  $type);
-  }
+    public function scopeType($scope, $type)
+    {
+        $scope->where('type', '=',  $type);
+    }
 
-  // public function scopeOrType($scope, $type)
-  // {
-  //     $scope->orWhere('icon', 'LIKE', '%' . $type . '%');
-  // }
 
-  public function scopeTypeLine($scope, $typeLine)
-  {
+    public function scopeTypeLine($scope, $typeLine)
+    {
       $scope->where('typeLine', 'LIKE', '%' .  $typeLine . '%');
-  }
+    }
 
-  protected static function boot() {
-    parent::boot();
+    public function scopeLevel($scope,$min,$max){
+        if ($min && $max) {
+          $scope->whereBetween('ilvl', [intval($min), intval($max)]);
+        } elseif ($min){
+          $scope->where('ilvl', '>=', intval($min));
+        } elseif ($max){
+          $scope->where('ilvl', '<=', intval($max));
+        }
+    }
 
-    static::deleting(function($item) {
-        // dd('hello from deleting items: ');
-        $item->mods()->delete();
-    });
-  }
+    public function scopeLinks($scope,$min,$max){
+        if ($min && $max) {
+          $scope->whereBetween('maxLinks', [intval($min), intval($max)]);
+        } elseif ($min){
+          $scope->where('maxLinks', '>=', intval($min));
+        } elseif ($max){
+          $scope->where('maxLinks', '<=', intval($max));
+        }
+    }
+
+    public function scopeSockets($scope,$min,$max){
+        if ($min && $max) {
+          $scope->whereBetween('socketNum', [intval($min), intval($max)]);
+        } elseif ($min){
+          $scope->where('socketNum', '>=', intval($min));
+        } elseif ($max){
+          $scope->where('socketNum', '<=', intval($max));
+        }
+    }
+
+    public function scopeMod($scope,$inpMods){
+      $scope->whereHas('mods', function($query) use (&$inpMods){
+          if ($inpMods['mod_id']) {
+            $query->where('mod_id', '=', $inpMods['mod_id']);
+          }
+          if ($inpMods['min'] && $inpMods['max']) {
+            $query->whereBetween('value', [intval($inpMods['min']), intval($inpMods['max'])]);
+          } elseif ($inpMods['min']){
+            $query->where('value', '>=', intval($inpMods['min']));
+          } elseif ($inpMods['max']){
+            $query->where('value', '<=', intval($inpMods['max']));
+          }
+      });
+    }
+    protected static function boot() {
+        parent::boot();
+
+        static::deleting(function($item) {
+            // dd('hello from deleting items: ');
+            $item->mods()->delete();
+        });
+    }
 
 
 }

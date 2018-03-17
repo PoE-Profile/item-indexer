@@ -149,7 +149,9 @@ html, body {
   text-align: center;
 }
 
-
+.mods{
+  color: gray;font-weight: bold;
+}
 /*dashboard example sitebar*/
 /*
  * Sidebar

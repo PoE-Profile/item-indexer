@@ -2,8 +2,9 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Exile Cloud</title>
+    <title>demo.poe-profile.info</title>
     <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" media="screen" title="no title">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
@@ -46,45 +47,22 @@
 
               <!-- Branding Image -->
               <a class="navbar-brand" href="{{ url('/') }}">
-                  Exile Cloud
+                  demo.poe-profile.info
               </a>
           </div>
 
           <div class="collapse navbar-collapse" id="app-navbar-collapse">
-              <!-- Left Side Of Navbar -->
-              <ul class="nav navbar-nav">
-                  <li><a href="{{ url('/profile') }}">Profile</a></li>
-                  <li><a href="{{ url('/stats') }}">Accounts/Character Stats</a></li>
-              </ul>
 
               <!-- Right Side Of Navbar -->
               <ul class="nav navbar-nav navbar-right" style="padding-right: 10px;">
-                  <!-- Authentication Links -->
-
-                  @if (Auth::guest())
-                      <li><a href="{{ url('/login') }}">Login</a></li>
-                      <li><a href="{{ url('/register') }}">Register</a></li>
-                  @else
-                      <li class="dropdown">
-
-                          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            <img src="/uploads/avatars/{{Auth::user()->avatar}}" style="width:25px; height:25px; float:left; border-radius:50%; margin-right:25px;" /><span class="caret"></span>
-                              {{-- {{ Auth::user()->name }}  --}}
-
-                          </a>
-
-                          <ul class="dropdown-menu" role="menu">
-                              <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>Logout</a></li>
-                              <li><a href="{{ url('/settings') }}"><i class="fa fa-btn fa-user"></i>Account Settings</a></li>
-                              <li><a href="{{ url('/profile') }}"><i class="fa fa-btn fa-user"></i>Poe Profile</a></li>
-                          </ul>
-                      </li>
-                  @endif
-
+                <li class="nav-item float-lg-right"><a href="https://github.com/PoE-Profile/item-indexer">
+                    <i aria-hidden="true" class="fa fa-github fa-4" style="font-size: 25px;"></i>Github</a>
+                </li>
               </ul>
           </div>
         </nav>
-      <div id="app">
+      <div id="app" style="height: 800px;">
+        <div class="alert alert-warning" role="alert">This is Demo of <a href="https://github.com/PoE-Profile/item-indexer"><i aria-hidden="true" class="fa fa-github fa-4" style="font-size: 25px;"></i> https://github.com/PoE-Profile/item-indexer</a> it has around 500 000 items indexed on 17.03.2018</div>
         @yield('content')
       </div>
     </div>

@@ -21,7 +21,7 @@ class TakeStashes extends Command
      *
      * @var string
      */
-    protected $signature = 'poe:addStashes {--continue} {--index}';
+    protected $signature = 'poe:take-stashes {--changeid} {--index}';
     // private $ids=[];
     // private $json;
     // private $api;
@@ -42,7 +42,7 @@ class TakeStashes extends Command
      *
      * @var string
      */
-    protected $description = '{--continue} {--etools=} poetools // Taking all Api data for stashes';
+    protected $description = '{--changeid} {--index} // Taking all Api data for stashes';
 
     /**
      * Create a new command instance.
@@ -65,42 +65,22 @@ class TakeStashes extends Command
     public function handle()
     {
         $lastPageId="";
-        //if only index option start geting only ids
-        if($this->option('index')){
-            $this->comment("start checking for new ids:");
-            do {
-                $next_page = ApiPages::orderBy('id', 'desc')->first();
-                //$this->index($next_page->pageId);
 
-                //if page ids difrent start new job
-
-                if($next_page->pageId!=$lastPageId){
-                  $this->logTime("start new DbJob:".$next_page);
-                  //$this->comment("start new DbJob:".$next_page);
-                  $lastPageId=$next_page->pageId;
-                  $this->dispatch(new DbJob($next_page->pageId));
-                }
-                //$this->comment("no new ids..");
-                sleep(1);
-            } while (true);
-         }
-
-        $this->comment("get lastPage");
-        //get lastPage id from DB
-        $this->lastPage = ApiPages::orderBy('id', 'desc')->first();
-
-        if(!$this->lastPage){
-          //if no last page get next_change_id from begining of poe api
-          $poeJson = file_get_contents('http://www.pathofexile.com/api/public-stash-tabs');
-          $this->savePage("0-0-0-0-0",$poeJson);
-        }
-
-        if($this->option('continue')){
-          $json = file_get_contents("http://107.191.126.15/poe.json");
-          $temp_id=json_decode($json)->last_id;
-          $this->comment("continue from server demon id:".$temp_id);
+        if($this->option('changeid')){
+          $this->comment("Get Next change id from http://poe.ninja/stats.");
+          $temp_id = $this->ask('Next change id ?');
           $poeJson=$this->getPage($temp_id);
           $this->savePage($temp_id,$poeJson);
+        }else{
+          $this->comment("get lastPage");
+          //get lastPage id from DB
+          $this->lastPage = ApiPages::orderBy('id', 'desc')->first();
+
+          if(!$this->lastPage){
+            //if no last page get next_change_id from begining of poe api
+            $poeJson = file_get_contents('http://www.pathofexile.com/api/public-stash-tabs');
+            $this->savePage("0-0-0-0-0",$poeJson);
+          }
         }
 
         //get next id and redirect to slef
@@ -115,7 +95,6 @@ class TakeStashes extends Command
           $this->logTime(" Time:",false);
           $this->savePage($next_id,$poeJson);
           $this->logTime("Time:");
-          // sleep(1);
           usleep(1900000);
         } while (true);
 

@@ -50,7 +50,7 @@ return [
 
         'api' => [
             'driver' => 'local',
-            'root' => public_path('storage'),
+            'root' => public_path('api'),
             'visibility' => 'public',
         ],
 

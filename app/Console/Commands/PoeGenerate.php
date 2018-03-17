@@ -37,59 +37,6 @@ class PoeGenerate extends Command
      */
     public function handle()
     {
-        if($this->option('mods')){
-            $this->info('gen poeMods2.json');
-
-            // $mods = \DB::table('mods')->get();
-            // $bigData = \Storage::disk('api')->get("poeData.json");
-            $bigData=file_get_contents("storage/modsBigDb.json");
-            $bigData = json_decode($bigData);
-            // $mods=$bigData->mods;
-            $mods=array_map(function($mod){ return  $mod->name; }, $bigData);
-            // dd($mods);
-            // $mods=array_filter($mods, function($mystring) {
-            //     return strpos($mystring, "\n")===false
-            //             &&strpos($mystring, "total +#")===false
-            //             &&strpos($mystring, "(#-#)")===false
-            //             &&strlen($mystring)<50
-            //             // &&strpos($mystring, "<currencyitem>")===false
-            //             // &&strpos($mystring, "<uniqueitem>")===false
-            //             // &&strpos($mystring, "<whiteitem>")===false
-            //             // &&strpos($mystring, "<gemitem>")===false
-            //             // &&strpos($mystring, "<magicitem>")===false
-            //             // &&strpos($mystring, "<rareitem>")===false
-            //             // &&strpos($mystring, "<prophecy>")===false
-            //             &&strpos($mystring, "#-#")===false;
-            // });
-            // dd($mods);
-            $mods=array_map(function($mod){
-                $vowels = array("+# ", "#% ", " # ", "+", "#.#", "#.", "-# ", "-", "#","Addsto");
-                return trim(str_replace($vowels, "", $mod));
-            }, $mods);
-
-            // dd($mods);
-
-            $names = \Storage::disk('api')->get("names.json");
-            $names = json_decode($names);
-
-            $types = \DB::table('items')->select('type')->groupBy('type')->get();
-            $types=array_map(function($item){ return  $item->type; }, $types);
-
-            $typeLines = \DB::table('items')
-                        ->where('frameType', '=', 2)
-                        ->where('typeLine', 'not like', "%Superior%")
-                        ->where('typeLine', 'not like', "%Map%")
-                        ->select('typeLine')->groupBy('typeLine')->get();
-            $typeLines=array_map(function($item){ return  $item->typeLine; }, $typeLines);
-
-            // dd($typeLines);
-            $combined = array_merge($types, $mods, $names, $typeLines);
-            // dd($combined);
-            $newData = json_encode(array_values($combined), JSON_PRETTY_PRINT);
-            \Storage::disk('api')->put("poeMods.json", $newData);
-
-            return;
-        }
         $types = \DB::table('items')->select('type')->groupBy('type')->get();
         $allTypes = \App\Item::where('frameType', '=', 4)
                 ->orWhere('frameType', '=', 0)
@@ -146,11 +93,11 @@ class PoeGenerate extends Command
             ];
         }
         $jsonTypeAndTypeLine = array_values($jsonTypeAndTypeLine);
-        $this->info('Type and BaseType json generated');
+        $this->info('Type and BaseType generated');
 
-        $mods = \DB::table('mods')->get();
+        $mods = \DB::table('mods')->get()->toArray();
         $mods=array_map(function($mod){ return  array('id' => $mod->id, 'name' => $mod->name); }, $mods);
-        $this->info('Mods json generated');
+        $this->info('Mods generated');
 
         $newData = [
             'TypeAndBaseType' => $jsonTypeAndTypeLine,
