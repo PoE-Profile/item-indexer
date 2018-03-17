@@ -15,5 +15,5 @@ http://demo.poe-profile.info
 - run "php artisan poe:take-stashes" to start downloading pages from public stash api if you want to index live data go to http://poe.ninja/stats get "Next change id" and run "php artisan poe:take-stashes --changeid"
 - while runing "poe:take-stashes" in separate terminal window run "php artisan poe:process-stashes" to start process downloaded pages
 - if you want to search by mods:
-	-run 'poe:process-mods --import=file' to fill mods table
-	-then run 'poe:process-mods' to start processing items mods and add them to 'item_mods' table
+	- run 'poe:process-mods --import=file' to fill mods table
+	- then run 'poe:process-mods' to start processing items mods and add them to 'item_mods' table
